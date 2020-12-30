@@ -225,7 +225,7 @@ const InputForm = (props) => {
             <InputPart
               value={grade}
               onChangeText={(text) => {
-                setGrade(grade);
+                setGrade(text);
                 setError('');
               }}
               title="Grade"
@@ -323,7 +323,7 @@ const InputForm = (props) => {
           ) : null}
 
           <Button full width onPress={createResolution}>
-            Create Resolution
+            Create ID Card
           </Button>
 
           <Divider medium />

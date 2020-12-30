@@ -1,13 +1,16 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   View,
   StyleSheet,
   Image,
   Dimensions,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import {TextField, Divider, GlobalTheme, RoundAvatar} from '../../Component';
 import {primaryColor} from '../../Utils';
+import ViewShot from 'react-native-view-shot';
+import CameraRoll from '@react-native-community/cameraroll';
 
 const IDCardOne = ({route, loading}) => {
   const {
@@ -29,6 +32,17 @@ const IDCardOne = ({route, loading}) => {
   const styles = _styles({color});
   const txt = `https://edigitalnepal.com/smsbeta/apis/v3/common/webview/student/profile?id=${userId}&teamId=${teamId}`;
 
+  const [saved, setSaved] = useState(false);
+  const viewRef = React.useRef();
+
+  const onTakeScreenshot = () => {
+    viewRef.current.capture().then((uri) => {
+      console.log('do something with ', uri);
+      CameraRoll.save(uri, ('photo', 'IDcard'));
+      setSaved(true);
+    });
+  };
+
   if (loading)
     return (
       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
@@ -40,69 +54,81 @@ const IDCardOne = ({route, loading}) => {
     <View style={{flex: 1, backgroundColor: primaryColor}}>
       <View style={{backgroundColor: 'blue', width: '100%', flex: 1}}>
         <View style={styles.mainView}>
-          <View style={styles.card}>
-            <View style={styles.head}>
-              {/* <TextField>Digital Card</TextField> */}
-              <Divider big />
+          <ViewShot ref={viewRef} options={{format: 'jpg', quality: 0.9}}>
+            <View style={styles.card}>
               <View style={styles.line} />
-              <Image
-                source={{uri: schoolLogo}}
-                style={styles.logo}
-                resizeMode={'contain'}
-              />
-              <Divider small />
-              <TextField bold center style={{maxWidth: '65%'}} title>
-                {schoolName}
-              </TextField>
-              <TextField bold center style={{maxWidth: '65%'}} secondarybody>
-                {schoolAddress}
-              </TextField>
-              <TextField center style={{maxWidth: '65%'}} secondarybody>
-                {schoolEmail}
-              </TextField>
-            </View>
-            <Divider medium />
-            <View style={styles.imageContain}>
-              <View style={styles.crossView} />
-              <RoundAvatar size={90} source={{uri: profileImage}} />
-            </View>
-            <View style={styles.infoDetail}>
+              <View style={styles.head}>
+                {/* <TextField>Digital Card</TextField> */}
+                <Divider big />
+
+                <Image
+                  source={{uri: schoolLogo}}
+                  style={styles.logo}
+                  resizeMode={'contain'}
+                />
+                <Divider small />
+                <TextField bold center style={{maxWidth: '65%'}} title>
+                  {schoolName}
+                </TextField>
+                <TextField bold center style={{maxWidth: '65%'}} secondarybody>
+                  {schoolAddress}
+                </TextField>
+                <TextField center style={{maxWidth: '65%'}} secondarybody>
+                  {schoolEmail}
+                </TextField>
+              </View>
               <Divider medium />
-              <TextField
-                bold
-                center
-                style={{maxWidth: '65%'}}
-                medium
-                color={GlobalTheme.whiteColor}>
-                {name.toUpperCase()}
-              </TextField>
-              <TextField
-                center
-                style={{maxWidth: '65%'}}
-                color={GlobalTheme.whiteColor}>
-                (Student)
-              </TextField>
-              <Divider big />
-              <View style={styles.info}>
-                <View style={styles.names}>
-                  <TextField regular bold color={GlobalTheme.whiteColor}>
-                    Class : {classroom} ({grade})
-                  </TextField>
-                  <TextField regular bold color={GlobalTheme.whiteColor}>
-                    Contact : {phone}
-                  </TextField>
-                  <TextField regular bold color={GlobalTheme.whiteColor}>
-                    Valid upto : {classroomEndDate}
-                  </TextField>
-                </View>
-                {/* <QRCode
+              <View style={styles.imageContain}>
+                <View style={styles.crossView} />
+                <RoundAvatar size={90} source={{uri: profileImage}} />
+              </View>
+              <View style={styles.infoDetail}>
+                <Divider medium />
+                <TextField
+                  bold
+                  center
+                  style={{maxWidth: '65%'}}
+                  medium
+                  color={GlobalTheme.whiteColor}>
+                  {name.toUpperCase()}
+                </TextField>
+                <TextField
+                  center
+                  style={{maxWidth: '65%'}}
+                  color={GlobalTheme.whiteColor}>
+                  (Student)
+                </TextField>
+                <Divider big />
+                <View style={styles.info}>
+                  <View style={styles.names}>
+                    <TextField regular bold color={GlobalTheme.whiteColor}>
+                      Class : {classroom} ({grade})
+                    </TextField>
+                    <TextField regular bold color={GlobalTheme.whiteColor}>
+                      Contact : {phone}
+                    </TextField>
+                    <TextField regular bold color={GlobalTheme.whiteColor}>
+                      Valid upto : {classroomEndDate}
+                    </TextField>
+                  </View>
+                  {/* <QRCode
               value={txt}
               backgroundColor={'transparent'}
               color={'white'}
             /> */}
+                </View>
               </View>
             </View>
-          </View>
+          </ViewShot>
+          <TouchableOpacity
+            disabled={saved}
+            style={[
+              styles.sendButton,
+              {backgroundColor: saved ? 'green' : 'white'},
+            ]}
+            onPress={onTakeScreenshot}>
+            <TextField>{saved ? 'Saved' : 'Save ID Card'} </TextField>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -120,18 +146,19 @@ const _styles = ({color}) => {
     },
     card: {
       // backgroundColor: GlobalTheme.darkBlueColor,
-      width: '90%',
-      height: 550,
+      width: '85%',
+      height: 570,
       alignItems: 'center',
       backgroundColor: '#fff',
       overflow: 'hidden',
       borderRadius: 6,
+      position: 'relative',
     },
     head: {width: '100%', alignItems: 'center'},
     line: {
       position: 'absolute',
-      height: 80,
-      width: 80,
+      height: 100,
+      width: 100,
       left: 0,
       top: 0,
       borderTopColor: color,
@@ -181,6 +208,13 @@ const _styles = ({color}) => {
     names: {
       flex: 1,
       justifyContent: 'center',
+    },
+    sendButton: {
+      marginTop: 20,
+      backgroundColor: 'white',
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: 5,
     },
   });
 };
